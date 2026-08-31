@@ -1,0 +1,21 @@
+# Blueprint opcional para o Render
+# Você também pode configurar tudo pelo painel web
+
+services:
+  - type: web
+    name: precifica
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: APP_PASSWORD
+        sync: false   # você define no painel
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: DATABASE_PATH
+        value: /var/data/precifica.db
+    disk:
+      name: precifica-data
+      mountPath: /var/data
+      sizeGB: 1

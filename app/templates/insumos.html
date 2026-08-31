@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block title %}Ingredientes — PRECIFICA{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Ingredientes</h1>
+        <p>Cadastre embalagens e preços — o custo por unidade é calculado automaticamente.</p>
+    </div>
+    <button class="btn btn-primary" onclick="openModal('modal-novo')">+ Novo</button>
+</div>
+
+{% if insumos %}
+<div class="insumo-list">
+    {% for insumo in insumos %}
+    <div class="insumo-item">
+        <div class="info">
+            <h3>{{ insumo.nome }}</h3>
+            <p>
+                {{ insumo.quantidade_embalagem|int if insumo.quantidade_embalagem == insumo.quantidade_embalagem|int else insumo.quantidade_embalagem }}{{ insumo.unidade }}
+                por R$ {{ "%.2f"|format(insumo.preco) }}
+                {% if insumo.fornecedor %} · {{ insumo.fornecedor }}{% endif %}
+            </p>
+        </div>
+        <div style="display:flex; align-items:center;">
+            <span class="custo">R$ {{ "%.2f"|format(insumo.custo_unitario) }}/{{ insumo.unidade_base }}</span>
+            <div class="actions">
+                <button class="btn-icon" onclick="openEditModal({{ insumo.id }}, '{{ insumo.nome }}', {{ insumo.quantidade_embalagem }}, '{{ insumo.unidade }}', {{ insumo.preco }}, '{{ insumo.fornecedor or '' }}')" title="Editar">✎</button>
+                <form method="post" action="/insumos/{{ insumo.id }}/excluir" style="display:inline;" onsubmit="return confirmDelete(this);">
+                    <button type="submit" class="btn-icon" title="Excluir">🗑</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <p>Nenhum ingrediente cadastrado ainda.</p>
+    <button class="btn btn-primary mt-4" onclick="openModal('modal-novo')">Cadastrar primeiro ingrediente</button>
+</div>
+{% endif %}
+
+<!-- Modal Novo -->
+<div class="modal-overlay" id="modal-novo">
+    <div class="modal">
+        <h2>Novo Ingrediente</h2>
+        <form method="post" action="/insumos">
+            <div class="form-group">
+                <label>Nome</label>
+                <input type="text" name="nome" required placeholder="Ex: Farinha de trigo">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Quantidade da embalagem</label>
+                    <input type="number" name="quantidade_embalagem" step="0.01" min="0.01" required placeholder="1000">
+                </div>
+                <div class="form-group">
+                    <label>Unidade</label>
+                    <select name="unidade" required>
+                        <option value="g">g (gramas)</option>
+                        <option value="kg">kg</option>
+                        <option value="ml">ml</option>
+                        <option value="L">L (litros)</option>
+                        <option value="un">un (unidade)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Preço pago (R$)</label>
+                <input type="number" name="preco" step="0.01" min="0" required placeholder="5.90">
+            </div>
+            <div class="form-group">
+                <label>Fornecedor (opcional)</label>
+                <input type="text" name="fornecedor" placeholder="Ex: Mercado">
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('modal-novo')">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Salvar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Editar -->
+<div class="modal-overlay" id="modal-editar">
+    <div class="modal">
+        <h2>Editar Ingrediente</h2>
+        <form method="post" id="form-editar">
+            <div class="form-group">
+                <label>Nome</label>
+                <input type="text" name="nome" id="edit-nome" required>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Quantidade da embalagem</label>
+                    <input type="number" name="quantidade_embalagem" id="edit-qtd" step="0.01" min="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label>Unidade</label>
+                    <select name="unidade" id="edit-unidade" required>
+                        <option value="g">g (gramas)</option>
+                        <option value="kg">kg</option>
+                        <option value="ml">ml</option>
+                        <option value="L">L (litros)</option>
+                        <option value="un">un (unidade)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Preço pago (R$)</label>
+                <input type="number" name="preco" id="edit-preco" step="0.01" min="0" required>
+            </div>
+            <div class="form-group">
+                <label>Fornecedor (opcional)</label>
+                <input type="text" name="fornecedor" id="edit-fornecedor">
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('modal-editar')">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Salvar</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function openEditModal(id, nome, qtd, unidade, preco, fornecedor) {
+    document.getElementById("form-editar").action = "/insumos/" + id + "/editar";
+    document.getElementById("edit-nome").value = nome;
+    document.getElementById("edit-qtd").value = qtd;
+    document.getElementById("edit-unidade").value = unidade;
+    document.getElementById("edit-preco").value = preco;
+    document.getElementById("edit-fornecedor").value = fornecedor || "";
+    openModal("modal-editar");
+}
+</script>
+{% endblock %}

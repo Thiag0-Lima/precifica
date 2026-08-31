@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Configurações — PRECIFICA{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Configurações</h1>
+        <p>Defina os parâmetros padrão usados nos cálculos.</p>
+    </div>
+</div>
+
+<div class="form-card">
+    <form method="post" action="/config">
+        <h3 style="font-size:1rem; margin-bottom:16px;">Custos operacionais</h3>
+
+        <div class="form-group">
+            <label>Percentual de custos invisíveis (gás, energia, perdas...) %</label>
+            <input type="number" name="custos_invisiveis_pct" step="0.1" min="0" max="100"
+                   value="{{ config.custos_invisiveis_pct }}" required>
+        </div>
+
+        <div class="form-group">
+            <label>Taxa horária de mão de obra (R$/h)</label>
+            <input type="number" name="taxa_horaria" step="0.01" min="0"
+                   value="{{ config.taxa_horaria }}" required>
+        </div>
+
+        <div class="form-group">
+            <label>Margem mínima de alerta (%)</label>
+            <input type="number" name="margem_minima_alerta" step="0.1" min="0" max="100"
+                   value="{{ config.margem_minima_alerta }}" required>
+        </div>
+
+        <hr style="border:none; border-top:1px solid var(--border); margin: 28px 0;">
+
+        <h3 style="font-size:1rem; margin-bottom:16px;">Embalagens e taxas</h3>
+
+        <div class="form-group">
+            <label>Valor fixo de embalagem por unidade (R$)</label>
+            <input type="number" name="embalagem_padrao" step="0.01" min="0"
+                   value="{{ config.embalagem_padrao }}" required>
+        </div>
+
+        <div class="form-group">
+            <label>Taxa de cartão / plataforma (%)</label>
+            <input type="number" name="taxa_cartao_pct" step="0.1" min="0" max="100"
+                   value="{{ config.taxa_cartao_pct }}" required>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Salvar configurações</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

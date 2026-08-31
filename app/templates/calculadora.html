@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}Calculadora — PRECIFICA{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Calculadora de Precificação</h1>
+        <p>Escale a receita e simule margem ou preço alvo.</p>
+    </div>
+</div>
+
+<div class="calc-layout">
+    <!-- Formulário -->
+    <div class="form-card">
+        <form method="post" action="/calculadora">
+            <div class="form-group">
+                <label>Receita</label>
+                <select name="receita_id" required>
+                    <option value="">Selecione uma receita...</option>
+                    {% for r in receitas %}
+                    <option value="{{ r.id }}" {% if receita_selecionada == r.id %}selected{% endif %}>{{ r.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Rendimento desejado</label>
+                <input type="number" name="rendimento_desejado" step="0.01" min="0.01" required
+                       value="{{ rendimento_desejado or '' }}" placeholder="Ex: 24">
+            </div>
+
+            <hr style="border:none; border-top:1px solid var(--border); margin: 24px 0;">
+
+            <h4 style="font-size:0.95rem; margin-bottom:12px;">Simulador de preço</h4>
+
+            <div class="form-group">
+                <label>Margem desejada (%)</label>
+                <input type="number" name="margem_desejada" step="0.1" min="0" max="99"
+                       value="{{ margem_desejada or '' }}" placeholder="Ex: 60">
+            </div>
+
+            <div class="form-group">
+                <label>OU Preço alvo (R$)</label>
+                <input type="number" name="preco_alvo" step="0.01" min="0"
+                       value="{{ preco_alvo or '' }}" placeholder="Ex: 5.00">
+            </div>
+
+            <div class="form-actions" style="justify-content:flex-start;">
+                <button type="submit" class="btn btn-primary">Calcular</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Resultado -->
+    <div>
+        {% if resultado %}
+        <div class="calc-result">
+            <h3>{{ resultado.receita_nome }}</h3>
+            <p class="text-muted mb-4">
+                Rendimento: {{ resultado.rendimento_desejado }} {{ resultado.rendimento_unidade }}
+                (fator {{ resultado.fator }}x)
+            </p>
+
+            <h4 style="font-size:0.9rem; margin-bottom:8px;">Quantidades necessárias</h4>
+            <ul class="calc-itens">
+                {% for item in resultado.itens %}
+                <li>
+                    <span>{{ item.nome }}</span>
+                    <span>{{ item.quantidade }} {{ item.unidade }} · R$ {{ "%.2f"|format(item.custo) }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+
+            <div class="calc-custos">
+                <div class="linha"><span>Insumos</span><span>R$ {{ "%.2f"|format(resultado.custo_insumos) }}</span></div>
+                <div class="linha"><span>Custos invisíveis</span><span>R$ {{ "%.2f"|format(resultado.custo_invisiveis) }}</span></div>
+                <div class="linha"><span>Mão de obra</span><span>R$ {{ "%.2f"|format(resultado.custo_mao_obra) }}</span></div>
+                <div class="linha"><span>Embalagem</span><span>R$ {{ "%.2f"|format(resultado.custo_embalagem) }}</span></div>
+                <div class="linha total"><span>Custo total do lote</span><span>R$ {{ "%.2f"|format(resultado.custo_total) }}</span></div>
+                <div class="linha"><span>Custo unitário</span><span><strong>R$ {{ "%.2f"|format(resultado.custo_unitario) }}</strong></span></div>
+            </div>
+
+            {% if resultado.preco_sugerido %}
+            <div class="simulador">
+                <h4>Resultado da simulação</h4>
+                <div class="linha" style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                    <span>Preço de venda</span>
+                    <strong>R$ {{ "%.2f"|format(resultado.preco_sugerido) }}</strong>
+                </div>
+                <div class="linha" style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                    <span>Lucro unitário</span>
+                    <span>R$ {{ "%.2f"|format(resultado.lucro) }}</span>
+                </div>
+                <div class="linha" style="display:flex; justify-content:space-between;">
+                    <span>Margem real</span>
+                    <span>{{ resultado.margem_real }}%</span>
+                </div>
+
+                {% if resultado.margem_real is not none %}
+                    {% if resultado.margem_real < 0 %}
+                    <div class="alerta-margem danger">⚠ Margem negativa! Você está vendendo no prejuízo.</div>
+                    {% elif resultado.margem_real < resultado.margem_minima %}
+                    <div class="alerta-margem warning">⚠ Margem abaixo do mínimo configurado ({{ resultado.margem_minima }}%).</div>
+                    {% else %}
+                    <div class="alerta-margem ok">✓ Margem saudável.</div>
+                    {% endif %}
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+        {% else %}
+        <div class="calc-result" style="text-align:center; color:var(--text-muted); padding:48px 24px;">
+            <p>Selecione uma receita e informe o rendimento desejado para ver o cálculo.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

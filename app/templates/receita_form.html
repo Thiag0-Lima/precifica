@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}{% if receita %}Editar{% else %}Nova{% endif %} Receita — PRECIFICA{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <a href="/receitas" class="text-muted" style="text-decoration:none; font-size:0.9rem;">← Voltar</a>
+        <h1 style="margin-top:8px;">{% if receita %}Editar Receita{% else %}Nova Receita{% endif %}</h1>
+    </div>
+</div>
+
+<div class="form-card">
+    <form method="post" action="{% if receita %}/receitas/{{ receita.id }}/editar{% else %}/receitas{% endif %}">
+        <div class="form-group">
+            <label>Nome da receita</label>
+            <input type="text" name="nome" required value="{{ receita.nome if receita else '' }}" placeholder="Ex: Bolo de cenoura">
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Categoria</label>
+                <input type="text" name="categoria" value="{{ receita.categoria if receita else '' }}" placeholder="Ex: Bolos">
+            </div>
+            <div class="form-group">
+                <label>Tempo de preparo (minutos)</label>
+                <input type="number" name="tempo_preparo_min" min="0" value="{{ receita.tempo_preparo_min if receita else 0 }}">
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Rendimento (quantidade)</label>
+                <input type="number" name="rendimento_qtd" step="0.01" min="0.01" required value="{{ receita.rendimento_qtd if receita else '' }}" placeholder="12">
+            </div>
+            <div class="form-group">
+                <label>Unidade do rendimento</label>
+                <select name="rendimento_unidade">
+                    <option value="fatias" {% if receita and receita.rendimento_unidade == 'fatias' %}selected{% endif %}>fatias</option>
+                    <option value="un" {% if receita and receita.rendimento_unidade == 'un' %}selected{% endif %}>unidades</option>
+                    <option value="g" {% if receita and receita.rendimento_unidade == 'g' %}selected{% endif %}>gramas</option>
+                    <option value="kg" {% if receita and receita.rendimento_unidade == 'kg' %}selected{% endif %}>kg</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Observação (opcional)</label>
+            <textarea name="observacao" rows="2" placeholder="Ex: usar forma 20cm">{{ receita.observacao if receita else '' }}</textarea>
+        </div>
+
+        <h3 style="margin: 28px 0 12px; font-size:1rem;">Ingredientes</h3>
+
+        <table class="itens-table">
+            <thead>
+                <tr>
+                    <th style="width:45%">Ingrediente</th>
+                    <th style="width:20%">Quantidade</th>
+                    <th style="width:20%">Unidade</th>
+                    <th style="width:15%"></th>
+                </tr>
+            </thead>
+            <tbody id="itens-body">
+                {% if receita and receita.itens %}
+                    {% for item in receita.itens %}
+                    <tr>
+                        <td>
+                            <select name="insumo_id" required>
+                                <option value="">Selecione...</option>
+                                {% for insumo in insumos %}
+                                <option value="{{ insumo.id }}" {% if item.insumo_id == insumo.id %}selected{% endif %}>{{ insumo.nome }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td>
+                            <input type="number" name="quantidade" step="0.01" min="0.01" required
+                                   value="{{ (item.quantidade / 1000) if item.unidade in ['kg','L'] else item.quantidade }}">
+                        </td>
+                        <td>
+                            <select name="unidade">
+                                <option value="g" {% if item.unidade == 'g' %}selected{% endif %}>g</option>
+                                <option value="kg" {% if item.unidade == 'kg' %}selected{% endif %}>kg</option>
+                                <option value="ml" {% if item.unidade == 'ml' %}selected{% endif %}>ml</option>
+                                <option value="L" {% if item.unidade == 'L' %}selected{% endif %}>L</option>
+                                <option value="un" {% if item.unidade == 'un' %}selected{% endif %}>un</option>
+                            </select>
+                        </td>
+                        <td>
+                            <button type="button" class="btn-icon" onclick="this.closest('tr').remove()">🗑</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td>
+                            <select name="insumo_id" required>
+                                <option value="">Selecione...</option>
+                                {% for insumo in insumos %}
+                                <option value="{{ insumo.id }}">{{ insumo.nome }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td>
+                            <input type="number" name="quantidade" step="0.01" min="0.01" required placeholder="Qtd">
+                        </td>
+                        <td>
+                            <select name="unidade">
+                                <option value="g">g</option>
+                                <option value="kg">kg</option>
+                                <option value="ml">ml</option>
+                                <option value="L">L</option>
+                                <option value="un">un</option>
+                            </select>
+                        </td>
+                        <td>
+                            <button type="button" class="btn-icon" onclick="this.closest('tr').remove()">🗑</button>
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+
+        <button type="button" class="btn-add-item" onclick="addItemRow()">+ Adicionar ingrediente</button>
+
+        <div class="form-actions">
+            <a href="/receitas" class="btn btn-secondary">Cancelar</a>
+            <button type="submit" class="btn btn-primary">Salvar receita</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

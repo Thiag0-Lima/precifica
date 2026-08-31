@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Receitas — PRECIFICA{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1>Receitas</h1>
+        <p>Custo e preço sugerido calculados pelo rendimento.</p>
+    </div>
+    <a href="/receitas/nova" class="btn btn-primary">+ Nova receita</a>
+</div>
+
+{% if receitas %}
+<div class="card-grid">
+    {% for r in receitas %}
+    <div class="card card-receita">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <div>
+                <h3>{{ r.nome }}</h3>
+                <p class="meta">
+                    {% if r.categoria %}{{ r.categoria }} · {% endif %}
+                    rende {{ r.rendimento_qtd|int if r.rendimento_qtd == r.rendimento_qtd|int else r.rendimento_qtd }} {{ r.rendimento_unidade }}
+                </p>
+            </div>
+            <div class="actions">
+                <a href="/receitas/{{ r.id }}/pdf" class="btn-icon" title="Exportar PDF" target="_blank">📄</a>
+                <form method="post" action="/receitas/{{ r.id }}/duplicar" style="display:inline;">
+                    <button type="submit" class="btn-icon" title="Duplicar">⧉</button>
+                </form>
+                <a href="/receitas/{{ r.id }}/editar" class="btn-icon" title="Editar">✎</a>
+                <form method="post" action="/receitas/{{ r.id }}/excluir" style="display:inline;" onsubmit="return confirmDelete(this);">
+                    <button type="submit" class="btn-icon" title="Excluir">🗑</button>
+                </form>
+            </div>
+        </div>
+        <div class="precos">
+            <div>
+                <span>Custo/un</span>
+                <strong>R$ {{ "%.2f"|format(r.custo_unitario or 0) }}</strong>
+            </div>
+            <div>
+                <span>Preço sugerido*</span>
+                <strong class="sugerido">R$ {{ "%.2f"|format((r.custo_unitario or 0) * 2) }}</strong>
+            </div>
+        </div>
+        <p class="text-muted mt-2" style="font-size:0.75rem;">* margem 50% sobre custo de insumos (use a Calculadora para valor completo)</p>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <p>Nenhuma receita cadastrada ainda.</p>
+    <a href="/receitas/nova" class="btn btn-primary mt-4">Criar primeira receita</a>
+</div>
+{% endif %}
+{% endblock %}

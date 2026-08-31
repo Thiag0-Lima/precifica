@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}PRECIFICA{% endblock %}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container header-inner">
+            <a href="/" class="logo">PRECIFICA</a>
+            <nav class="nav">
+                <a href="/receitas" class="{% if active == 'receitas' %}active{% endif %}">Receitas</a>
+                <a href="/insumos" class="{% if active == 'insumos' %}active{% endif %}">Ingredientes</a>
+                <a href="/calculadora" class="{% if active == 'calculadora' %}active{% endif %}">Calculadora</a>
+                <a href="/config" class="{% if active == 'config' %}active{% endif %}">Config</a>
+                <a href="/logout" title="Sair">Sair</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+
+    <script src="/static/js/main.js"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
